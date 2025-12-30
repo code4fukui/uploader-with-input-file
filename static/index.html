@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+</head><body>
+<h1>input-file test</h1>
+<main>
+  <input type=text id=inpubkey><br>
+  <textarea id=inbody></textarea><br>
+  <script type="module" src="https://code4fukui.github.io/input-file/input-file.js"></script>
+  <input-file id="infile" multiple></input-file><br>
+  <button id=btn>書き込む</button><br>
+</main>
+
+<style>
+main > * {
+  margin: .5em 0;
+}
+#inpubkey {
+  width: 80vw;
+}
+textarea {
+  width: 80vw;
+  height: 15em;
+  padding: .3em;
+  line-height: 1.5em;
+}
+
+</style>
+
+<script type="module">
+import { PubkeyUser } from "https://code4fukui.github.io/PubkeyUser/PubkeyUser.js";
+
+const u = new PubkeyUser();
+inpubkey.value = u.pubkey;
+
+infile.addEventListener("change", async (e) => {
+  const files = e.detail.files;
+  console.log("selected files:", files);
+
+  for (const file of files) {
+    if (file.uploading) continue;
+    file.uploading = true;
+    const fn = file.name;
+    const bin = new Uint8Array(await file.arrayBuffer());
+    const res = await u.fetch("upload", { fn, bin });
+    if (res.error) {
+      alert(res.error);
+      file.uploading = false;
+      continue;
+    }
+    file.tid = res;
+    file.uploaded = true;    
+  }
+});
+
+btn.onclick = async () => {
+  const files = infile.files;
+  if (files.filter(i => !i.uploaded).length) {
+    alert("アップロード中です。アップロードが終わってから再度押してください。");
+    return;
+  }
+  const param = {
+    pubkey: inpubkey.value,
+    body: inbody.value,
+    files: files.map(i => ({ tid: i.tid, name: i.name })),
+  };
+  const fn = "post.json";
+  const bin = new TextEncoder().encode(JSON.stringify(param));
+  const res = await u.fetch("upload", { fn, bin });
+  alert(res);
+};
+</script>
+
+</body></html>
