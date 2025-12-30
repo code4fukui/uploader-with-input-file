@@ -14,7 +14,8 @@ edit allowedUsers.json to allow
 ```json
 [
   "VN7R_CC8U_L4K9_RWMN_VRVJ_TZN5_CZ0F_3KQF_UQHP_QVNZ_2DF5_CGCM_65H0"
-]```
+]
+```
 
 ## reference
 
